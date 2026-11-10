@@ -1,0 +1,183 @@
+/**
+ * Festival Skin Component for FixIt
+ * 覆写 FixIt v1 的 --fi-* CSS 变量实现换肤，light-dark() 同时适配亮/暗色模式。
+ * 站点可通过 html[data-festival='xxx'] 选择器继续叠加自定义样式。
+ */
+
+/* ============================== 通用 ============================== */
+
+.festival-snow {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+.festival-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: MIN(90vw, 26rem);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.75rem;
+  background: light-dark(#fff, #2b3035);
+  color: light-dark(#1f2328, #b3bdcb);
+  border: 1px solid light-dark(#f0d5c0, #383f47);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  font-size: 0.9rem;
+  animation: festival-banner-in 0.4s ease;
+}
+
+.festival-banner__icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.festival-banner__text {
+  flex: 1;
+}
+
+.festival-banner__close {
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.5;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+  cursor: pointer;
+}
+
+.festival-banner__close:hover {
+  opacity: 1;
+}
+
+@keyframes festival-banner-in {
+  from {
+    transform: translate(-50%, 1rem);
+    opacity: 0;
+  }
+}
+
+@keyframes festival-sway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+/* 头部装饰（桌面端），移动端隐藏避免与菜单重叠 */
+@media only screen and (min-width: 1000px) {
+  #header-desktop[data-festival-deco],
+  html[data-festival='chunjie'] #header-desktop::before,
+  html[data-festival='yuanxiao'] #header-desktop::before,
+  html[data-festival='zhongqiu'] #header-desktop::before {
+    position: absolute;
+    top: 0.2rem;
+    right: 24%;
+    font-size: 1.6rem;
+    line-height: 1.6;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  html[data-festival='chunjie'] #header-desktop::before,
+  html[data-festival='yuanxiao'] #header-desktop::before {
+    content: '🏮🏮';
+    transform-origin: top center;
+    animation: festival-sway 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  }
+
+  html[data-festival='zhongqiu'] #header-desktop::before {
+    content: '🌕';
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.5));
+  }
+}
+
+/* ============================== 春节 / 除夕（红金） ============================== */
+
+html[data-festival='chunjie'],
+html[data-festival='chuxi'] {
+  --fi-global-background-color: light-dark(#fff6ee, #2b1516);
+  --fi-header-background-color: light-dark(#b93a26, #401b17);
+  --fi-single-link-color: light-dark(#c0392b, #e0665a);
+  --fi-global-border-color: light-dark(#eec9ae, #4a2b28);
+}
+
+/* ============================== 元宵（暖红粉） ============================== */
+
+html[data-festival='yuanxiao'] {
+  --fi-global-background-color: light-dark(#fff3f0, #2b1a1d);
+  --fi-header-background-color: light-dark(#d24b3e, #3d1f1a);
+  --fi-single-link-color: light-dark(#d24b3e, #ef7a6d);
+}
+
+/* ============================== 清明（低饱和，无特效） ============================== */
+
+html[data-festival='qingming'] {
+  --fi-global-background-color: light-dark(#f7f8f7, #1f2426);
+  --fi-header-background-color: light-dark(#5f6f65, #2a332e);
+}
+
+/* ============================== 端午（青绿） ============================== */
+
+html[data-festival='duanwu'] {
+  --fi-global-background-color: light-dark(#f4faf3, #17251b);
+  --fi-header-background-color: light-dark(#2f7d4f, #1b3a28);
+  --fi-single-link-color: light-dark(#2f7d4f, #6cbf8e);
+  --fi-global-border-color: light-dark(#cbe6d4, #2c4034);
+}
+
+/* ============================== 七夕（粉紫） ============================== */
+
+html[data-festival='qixi'] {
+  --fi-global-background-color: light-dark(#fdf3f8, #2b1a2e);
+  --fi-header-background-color: light-dark(#c2527f, #3d2244);
+  --fi-single-link-color: light-dark(#c2527f, #e387ae);
+}
+
+/* ============================== 中秋（深蓝金） ============================== */
+
+html[data-festival='zhongqiu'] {
+  --fi-global-background-color: light-dark(#f5f8fc, #16202e);
+  --fi-header-background-color: light-dark(#274a73, #1a2a3f);
+  --fi-single-link-color: light-dark(#274a73, #6fa3d8);
+  --fi-global-border-color: light-dark(#c9d8ea, #2a3a50);
+}
+
+/* ============================== 国庆 / 元旦 / 劳动节（红橙点缀） ============================== */
+
+html[data-festival='guoqing'],
+html[data-festival='newyear'],
+html[data-festival='wuyi'] {
+  --fi-header-background-color: light-dark(#d2543e, #3d211a);
+  --fi-single-link-color: light-dark(#d2543e, #ef8a6d);
+}
+
+/* ============================== 重阳 / 腊八（秋色淡染） ============================== */
+
+html[data-festival='chongyang'],
+html[data-festival='laba'] {
+  --fi-header-background-color: light-dark(#a86832, #3d2a1a);
+  --fi-single-link-color: light-dark(#a86832, #d99c5e);
+}
+
+/* ============================== 圣诞 / 冬至（冷蓝） ============================== */
+
+html[data-festival='shengdan'],
+html[data-festival='dongzhi'] {
+  --fi-global-background-color: light-dark(#f4f8fb, #182230);
+  --fi-header-background-color: light-dark(#33637e, #1f3242);
+  --fi-single-link-color: light-dark(#33637e, #7bb8d4);
+  --fi-global-border-color: light-dark(#cfe0ea, #2c3e50);
+}

@@ -1,0 +1,7 @@
+# Festival Skin Component for FixIt
+# See: https://gohugo.io/configuration/module/
+
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.112.0"

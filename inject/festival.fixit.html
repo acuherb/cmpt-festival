@@ -1,0 +1,19 @@
+{{- /*
+  Festival Skin Component for FixIt
+  根据公历/农历节日自动切换站点主题皮肤。
+  挂载点：params.custom_partials.assets
+  配置：site.Params.festival（可选，见 README）
+*/ -}}
+
+{{- /* 读取站点配置（浅合并到 JS 默认配置） */ -}}
+{{- $config := dict }}
+{{- with site.Params.festival }}
+  {{- $config = . }}
+{{- end }}
+
+{{- $css := resources.Get "css/festival.css" | minify | fingerprint }}
+{{- $js := resources.Get "js/festival.js" | js.Build (dict "minify" true "target" "es2018") | fingerprint }}
+
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}" crossorigin="anonymous">
+<script>window.FixItFestivalConfig = {{ $config | jsonify }};</script>
+<script defer src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" crossorigin="anonymous"></script>
