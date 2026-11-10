@@ -33,7 +33,7 @@ const DEFAULT_CONFIG = {
    * duration: 生效天数（含当天），默认 1
    */
   festivals: [
-    { id: 'newyear',   type: 'solar', date: '1-1',   name: '元旦',   level: 2, icon: '🎊' },
+    { id: 'newyear',   type: 'solar', date: '1-1',   name: '元旦',   level: 3, icon: '🎊' },
     { id: 'chunjie',   type: 'lunar', date: '1-1',   name: '春节',   level: 3, icon: '🏮', message: '新春快乐，万事胜意！' },
     { id: 'yuanxiao',  type: 'lunar', date: '1-15',  name: '元宵节', level: 2, icon: '🍡' },
     { id: 'qingming',  type: 'term',  date: '清明',   name: '清明',   level: 1 },
@@ -44,9 +44,9 @@ const DEFAULT_CONFIG = {
     { id: 'guoqing',   type: 'solar', date: '10-1',  name: '国庆节', level: 2, icon: '🎊', duration: 3 },
     { id: 'chongyang', type: 'lunar', date: '9-9',   name: '重阳节', level: 1, icon: '🍂' },
     { id: 'laba',      type: 'lunar', date: '12-8',  name: '腊八节', level: 1, icon: '🥣' },
-    { id: 'dongzhi',   type: 'term',  date: '冬至',   name: '冬至',   level: 2, icon: '❄️', message: '冬至大如年，愿君温暖过冬' },
+    { id: 'dongzhi',   type: 'term',  date: '冬至',   name: '冬至',   level: 3, icon: '❄️', message: '冬至大如年，愿君温暖过冬' },
     { id: 'chuxi',     type: 'lunar', date: '12-30', name: '除夕',   level: 3, icon: '🧨', message: '辞旧迎新，阖家团圆！' },
-    { id: 'shengdan',  type: 'solar', date: '12-25', name: '圣诞节', level: 2, icon: '🎄' },
+    { id: 'shengdan',  type: 'solar', date: '12-25', name: '圣诞节', level: 3, icon: '🎄' },
   ],
   /** 飘雪特效节日 */
   snowFestivals: ['shengdan', 'dongzhi'],
