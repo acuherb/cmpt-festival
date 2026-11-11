@@ -11,6 +11,14 @@
  */
 import solarlunarPkg from './vendor/solarlunar.min.js';
 import './vendor/confetti.browser.min.js';
+import {
+  addDays,
+  toLunar,
+  isMuted,
+  pickFestival,
+  daysBefore,
+  DEFAULT_FESTIVALS,
+} from './festival-core.js';
 
 /* solarlunar 的 UMD 导出形态在不同打包器 interop 下可能是 API 本体或 { default: API } */
 const solarlunar = solarlunarPkg.solar2lunar ? solarlunarPkg : solarlunarPkg.default;
@@ -27,27 +35,12 @@ const DEFAULT_CONFIG = {
    */
   mutedDates: ['*-9-18', '*-12-13', '*-5-12'],
   /**
-   * 节日表。
-   * type: solar（公历 M-D）/ lunar（农历 M-D）/ term（节气名）
+   * 节日表。type: solar（公历 M-D）/ lunar（农历 M-D）/ term（节气名）
    * level: 1 仅换肤；2 换肤+横幅；3 换肤+横幅+特效
    * duration: 生效天数（含当天），默认 1
+   * pre: 提前 N 天显示倒计时预告横幅（如春节 7）
    */
-  festivals: [
-    { id: 'newyear',   type: 'solar', date: '1-1',   name: '元旦',   level: 3, icon: '🎊' },
-    { id: 'chunjie',   type: 'lunar', date: '1-1',   name: '春节',   level: 3, icon: '🏮', message: '新春快乐，万事胜意！' },
-    { id: 'yuanxiao',  type: 'lunar', date: '1-15',  name: '元宵节', level: 2, icon: '🍡' },
-    { id: 'qingming',  type: 'term',  date: '清明',   name: '清明',   level: 1 },
-    { id: 'wuyi',      type: 'solar', date: '5-1',   name: '劳动节', level: 2, icon: '🛠️' },
-    { id: 'duanwu',    type: 'lunar', date: '5-5',   name: '端午节', level: 2, icon: '🥟' },
-    { id: 'qixi',      type: 'lunar', date: '7-7',   name: '七夕',   level: 2, icon: '💌' },
-    { id: 'zhongqiu',  type: 'lunar', date: '8-15',  name: '中秋节', level: 2, icon: '🌕', message: '花好月圆，千里共婵娟' },
-    { id: 'guoqing',   type: 'solar', date: '10-1',  name: '国庆节', level: 3, icon: '🎊', duration: 3 },
-    { id: 'chongyang', type: 'lunar', date: '9-9',   name: '重阳节', level: 1, icon: '🍂' },
-    { id: 'laba',      type: 'lunar', date: '12-8',  name: '腊八节', level: 1, icon: '🥣' },
-    { id: 'dongzhi',   type: 'term',  date: '冬至',   name: '冬至',   level: 3, icon: '❄️', message: '冬至大如年，愿君温暖过冬' },
-    { id: 'chuxi',     type: 'lunar', date: '12-30', name: '除夕',   level: 3, icon: '🧨', message: '辞旧迎新，阖家团圆！' },
-    { id: 'shengdan',  type: 'solar', date: '12-25', name: '圣诞节', level: 3, icon: '🎄' },
-  ],
+  festivals: DEFAULT_FESTIVALS,
   /** 飘雪特效节日 */
   snowFestivals: ['shengdan', 'dongzhi'],
   /** 彩带特效节日（需 level >= 3） */
@@ -69,57 +62,12 @@ const BANNER_DURATION = 8000;
 
 /* ============================== 工具函数 ============================== */
 
-const addDays = (d, n) => {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
+/** 当前是否为暗色方案（优先 color-scheme，读取不到时回退 prefers-color-scheme） */
+const isDarkScheme = () => {
+  const cs = getComputedStyle(document.documentElement).colorScheme;
+  if (cs) return cs.includes('dark');
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
-
-const lunarOf = (d) => solarlunar.solar2lunar(d.getFullYear(), d.getMonth() + 1, d.getDate());
-
-/**
- * 是否命中哀悼日（如 *-9-18）
- */
-function isMuted(now, mutedDates) {
-  const month = now.getMonth() + 1;
-  const date = now.getDate();
-  return mutedDates.some((md) => {
-    const [y, m, d] = md.split('-');
-    return (y === '*' || Number(y) === now.getFullYear()) && Number(m) === month && Number(d) === date;
-  });
-}
-
-function matchSolar(f, now) {
-  const [m, d] = f.date.split('-').map(Number);
-  const start = new Date(now.getFullYear(), m - 1, d);
-  return now >= start && now < addDays(start, f.duration || 1);
-}
-
-function matchLunar(f, today, tomorrow) {
-  const [m, d] = f.date.split('-').map(Number);
-  // 除夕特殊处理：腊月最后一天（廿九或三十，次年正月初一的前一天）
-  if (m === 12 && d === 30) {
-    return today.lMonth === 12 && tomorrow.lMonth === 1 && tomorrow.lDay === 1;
-  }
-  return !today.isLeap && today.lMonth === m && today.lDay === d;
-}
-
-function matchTerm(f, today) {
-  return Boolean(today.isTerm) && today.term === f.date;
-}
-
-function matchFestival(f, now, today, tomorrow) {
-  switch (f.type) {
-    case 'solar':
-      return matchSolar(f, now);
-    case 'lunar':
-      return matchLunar(f, today, tomorrow);
-    case 'term':
-      return matchTerm(f, today);
-    default:
-      return false;
-  }
-}
 
 /* ============================== 效果应用 ============================== */
 
@@ -138,6 +86,34 @@ function showBanner(f) {
   const text = document.createElement('span');
   text.className = 'festival-banner__text';
   text.textContent = f.message || `${f.name}快乐！`;
+
+  const close = document.createElement('button');
+  close.className = 'festival-banner__close';
+  close.type = 'button';
+  close.setAttribute('aria-label', '关闭');
+  close.textContent = '×';
+  close.addEventListener('click', () => banner.remove());
+
+  banner.append(icon, text, close);
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), BANNER_DURATION);
+}
+
+/**
+ * 倒计时预告横幅（未命中节日、但临近声明了 pre 的节日时显示）
+ */
+function showPreBanner(f, delta) {
+  const banner = document.createElement('div');
+  banner.className = 'festival-banner';
+  banner.dataset.festivalPre = f.id;
+
+  const icon = document.createElement('span');
+  icon.className = 'festival-banner__icon';
+  icon.textContent = '🔔';
+
+  const text = document.createElement('span');
+  text.className = 'festival-banner__text';
+  text.textContent = delta === 1 ? `明天就是${f.name}！` : `距离${f.name}还有 ${delta} 天`;
 
   const close = document.createElement('button');
   close.className = 'festival-banner__close';
@@ -175,13 +151,30 @@ function showLanterns(f) {
   document.body.appendChild(wrap);
 }
 
+/* 特效声明：节日条目上可写 effects: ['lantern','bunting','icicle','moon','confetti','firework','snow']
+ * 写了以它为准；未写则回退到按 id 的默认特效表（向后兼容，自定义 id 也能直接配特效） */
+const EFFECT_KEYS = {
+  lantern: 'lanternFestivals',
+  bunting: 'buntingFestivals',
+  icicle: 'icicleFestivals',
+  moon: 'moonFestivals',
+  confetti: 'confettiFestivals',
+  firework: 'fireworkFestivals',
+  snow: 'snowFestivals',
+};
+
+const hasEffect = (f, name) =>
+  Array.isArray(f.effects)
+    ? f.effects.includes(name)
+    : (config[EFFECT_KEYS[name]] || []).includes(f.id);
+
 /**
  * 页首主题装饰：按节日挂拉花 / 冰凌 / 月夜
  */
 function showDecor(f) {
-  if (config.buntingFestivals.includes(f.id)) addBunting();
-  if (config.icicleFestivals.includes(f.id)) addIcicles();
-  if (config.moonFestivals.includes(f.id)) addMoonScene();
+  if (hasEffect(f, 'bunting')) addBunting();
+  if (hasEffect(f, 'icicle')) addIcicles();
+  if (hasEffect(f, 'moon')) addMoonScene();
 }
 
 function addBunting() {
@@ -193,7 +186,7 @@ function addBunting() {
 
 function addIcicles() {
   if (document.querySelector('.fest-icicles')) return;
-  const header = document.querySelector('#header-desktop');
+  const header = document.querySelector('#header-desktop') || document.querySelector('#header-mobile');
   if (!header) return;
   const icicles = document.createElement('div');
   icicles.className = 'fest-icicles';
@@ -234,6 +227,7 @@ function addMoonScene() {
 }
 
 function launchConfetti(duration = 3000) {
+  if (typeof window.confetti !== 'function') return;
   const colors = ['#ff4d4f', '#ffb84d', '#f8f8f8', '#ffd666', '#69c0ff'];
   const end = Date.now() + duration;
   (function frame() {
@@ -354,8 +348,7 @@ function startSnow() {
   window.addEventListener('resize', resize);
 
   /* 亮色模式下白雪不可见，改用冰蓝灰；暗色模式用白 */
-  const dark = getComputedStyle(document.documentElement).colorScheme.includes('dark');
-  const rgb = dark ? '255, 255, 255' : '130, 160, 200';
+  const rgb = isDarkScheme() ? '255, 255, 255' : '130, 160, 200';
 
   /* 三层景深：远景细小飘忽，中景柔光，近景六臂雪花晶体（大而快、带风偏移） */
   const LAYERS = [
@@ -470,19 +463,32 @@ function apply(f) {
   );
 
   if (config.banner && f.level >= 2) showBanner(f);
-  if (config.lanternFestivals.includes(f.id)) showLanterns(f);
+  if (hasEffect(f, 'lantern')) showLanterns(f);
   showDecor(f);
 
+  /* 注意：reduced-motion 只停 canvas 特效，灯笼/星空等 CSS 动画由各自的
+   * @media (prefers-reduced-motion: no-preference) 单独控制（保留静态美感） */
   if (!config.effects || f.level < 3) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (config.confettiFestivals.includes(f.id)) launchConfetti();
-  if (config.fireworkFestivals.includes(f.id)) startFireworks();
-  if (config.snowFestivals.includes(f.id)) startSnow();
+  if (hasEffect(f, 'confetti')) launchConfetti();
+  if (hasEffect(f, 'firework')) startFireworks();
+  if (hasEffect(f, 'snow')) startSnow();
 }
 
 /* ============================== 初始化 ============================== */
 
 const config = { ...DEFAULT_CONFIG, ...(window.FixItFestivalConfig || {}) };
+
+/* 归一化：任何数组字段被站点配置写坏（null / 非数组）都退回默认值，
+ * 保证单个字段的配置错误不会让整条特效链静默失效 */
+for (const key of [
+  'mutedDates', 'festivals', 'snowFestivals', 'confettiFestivals', 'fireworkFestivals',
+  'lanternFestivals', 'buntingFestivals', 'icicleFestivals', 'moonFestivals',
+]) {
+  if (!Array.isArray(config[key])) config[key] = DEFAULT_CONFIG[key];
+}
+config.festivals = config.festivals.filter((f) => f && typeof f === 'object' && f.id && f.type && f.date);
+
 
 /* 'YYYY-MM-DD' → 本地日期（正午，避免时区偏移到前一天） */
 const parseLocalDate = (s) => {
@@ -499,13 +505,19 @@ const parseLocalDate = (s) => {
     return;
   }
 
-  const today = lunarOf(now);
-  const tomorrow = lunarOf(addDays(now, 1));
+  const solar2lunar = solarlunar.solar2lunar;
+  const hit = pickFestival(config.festivals, now, solar2lunar);
+  if (hit) {
+    apply(hit);
+    return;
+  }
 
-  const matched = config.festivals
-    .map((f) => ({ ...f, matched: matchFestival(f, now, today, tomorrow) }))
-    .filter((f) => f.matched)
-    .sort((a, b) => b.level - a.level);
-
-  if (matched.length) apply(matched[0]);
+  /* 未命中任何节日：对声明了 pre 的节日做倒计时预告，取最近的一个 */
+  if (!config.banner) return;
+  const upcoming = config.festivals
+    .filter((f) => Number.isFinite(f.pre) && f.pre >= 1)
+    .map((f) => ({ f, delta: daysBefore(f, now, solar2lunar) }))
+    .filter((x) => x.delta <= x.f.pre)
+    .sort((a, b) => a.delta - b.delta)[0];
+  if (upcoming) showPreBanner(upcoming.f, upcoming.delta);
 })();

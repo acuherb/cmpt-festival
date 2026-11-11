@@ -215,14 +215,14 @@
   }
 }
 
-/* 灯笼响应式（两档小屏尺寸，沿用旧版参数） */
-@media only screen and (max-width: 720px) {
+/* 灯笼响应式：1000px 以下先缩小并贴近边缘（平板），420px 以下再缩一档 */
+@media only screen and (max-width: 1000px) {
   .fest-lantern--left {
-    left: 30px;
+    left: 24px;
   }
 
   .fest-lantern--right {
-    right: 30px;
+    right: 24px;
   }
 
   .fest-lantern__container {
