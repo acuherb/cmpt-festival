@@ -13,6 +13,13 @@
   pointer-events: none;
 }
 
+.festival-fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 9996;
+  pointer-events: none;
+}
+
 .festival-banner {
   position: fixed;
   bottom: 1.5rem;
@@ -64,22 +71,236 @@
   }
 }
 
-@keyframes festival-sway {
+/* ============================== 纯 CSS 灯笼（春节 / 元宵） ============================== */
+
+.fest-lantern {
+  position: fixed;
+  top: 0;
+  z-index: 9997;
+  pointer-events: none;
+}
+
+.fest-lantern--left {
+  left: 150px;
+}
+
+.fest-lantern--right {
+  right: 150px;
+}
+
+.fest-lantern__container {
+  width: 150px;
+  height: 100px;
+  position: relative;
+  line-height: 0;
+  transform-origin: 50% -100px;
+}
+
+.fest-lantern__center {
+  position: relative;
+  height: 100%;
+  background-color: red;
+  border-radius: 120px;
+  box-shadow: 0 0 80px -10px red;
+}
+
+.fest-lantern__line {
+  height: 100%;
+  text-align: center;
+}
+
+.fest-lantern__line::before,
+.fest-lantern__line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border: 2px solid #ecaa2f;
+  border-radius: 50%;
+  transform: translate(-50%, 0);
+}
+
+.fest-lantern__line::before {
+  width: 75%;
+  height: 100%;
+}
+
+.fest-lantern__line::after {
+  width: 35%;
+  height: 100%;
+}
+
+.fest-lantern__text-wrap {
+  display: inline-block;
+  vertical-align: top;
+  height: 100%;
+}
+
+.fest-lantern__text {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ecaa2f;
+  writing-mode: vertical-lr;
+  text-align: center;
+  letter-spacing: 5px;
+}
+
+.fest-lantern__top,
+.fest-lantern__bottom {
+  width: 40%;
+  height: 8px;
+  background-color: #ecaa2f;
+  position: relative;
+  z-index: 1;
+}
+
+.fest-lantern__top {
+  margin: 0 auto -2px;
+  border-radius: 5px 5px 0 0;
+}
+
+.fest-lantern__bottom {
+  margin: -2px auto 0;
+  border-radius: 0 0 5px 5px;
+}
+
+.fest-lantern__top-rope {
+  width: 4px;
+  height: 65px;
+  background-color: #ecaa2f;
+  margin: 0 auto;
+}
+
+.fest-lantern__bottom-rope {
+  position: relative;
+  width: 4px;
+  height: 20px;
+  background-color: #ecaa2f;
+  margin: 0 auto;
+  transform-origin: 50% -45px;
+}
+
+.fest-lantern__bottom-rope::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: -4px;
+  width: 12px;
+  height: 50px;
+  background: linear-gradient(#f00, #e36d00 3px, #fbd342 5px, #e36d00 8px, #e36d00 12px, #f00 16px, rgba(255, 0, 0, 0.8) 26px, rgba(255, 0, 0, 0.6));
+  border-radius: 5px 5px 0 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fest-lantern__container {
+    animation: fest-lantern 5s infinite ease-in-out;
+  }
+
+  .fest-lantern__bottom-rope {
+    animation: fest-lantern 3s infinite ease-in-out;
+  }
+}
+
+@keyframes fest-lantern {
   0%,
   100% {
-    transform: rotate(-4deg);
+    transform: rotate(-10deg);
   }
   50% {
-    transform: rotate(4deg);
+    transform: rotate(10deg);
+  }
+}
+
+/* 灯笼响应式（两档小屏尺寸，沿用旧版参数） */
+@media only screen and (max-width: 720px) {
+  .fest-lantern--left {
+    left: 30px;
+  }
+
+  .fest-lantern--right {
+    right: 30px;
+  }
+
+  .fest-lantern__container {
+    width: 100px;
+    height: 60px;
+  }
+
+  .fest-lantern__center {
+    box-shadow: 0 0 40px -10px red;
+  }
+
+  .fest-lantern__top-rope {
+    width: 3px;
+    height: 45px;
+  }
+
+  .fest-lantern__top,
+  .fest-lantern__bottom {
+    width: 35%;
+    height: 6px;
+  }
+
+  .fest-lantern__top {
+    margin-bottom: -0.5px;
+  }
+
+  .fest-lantern__bottom {
+    margin-top: -0.5px;
+  }
+
+  .fest-lantern__bottom-rope {
+    width: 2px;
+  }
+
+  .fest-lantern__bottom-rope::after {
+    left: -2px;
+    width: 6px;
+    height: 25px;
+  }
+
+  .fest-lantern__text {
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+}
+
+@media only screen and (max-width: 420px) {
+  .fest-lantern__container {
+    width: 80px;
+    height: 50px;
+  }
+
+  .fest-lantern__top-rope {
+    height: 42px;
+  }
+
+  .fest-lantern__top,
+  .fest-lantern__bottom {
+    height: 4px;
+  }
+
+  .fest-lantern__top {
+    margin-bottom: 0;
+  }
+
+  .fest-lantern__bottom {
+    margin-top: 0;
+  }
+
+  .fest-lantern__line::before,
+  .fest-lantern__line::after {
+    border-width: 1px;
   }
 }
 
 /* 头部装饰（桌面端），移动端隐藏避免与菜单重叠 */
 @media only screen and (min-width: 1000px) {
-  #header-desktop[data-festival-deco],
-  html[data-festival='chunjie'] #header-desktop::before,
-  html[data-festival='yuanxiao'] #header-desktop::before,
-  html[data-festival='zhongqiu'] #header-desktop::before {
+  #header-desktop[data-festival-deco] {
     position: absolute;
     top: 0.2rem;
     right: 24%;
@@ -88,19 +309,129 @@
     pointer-events: none;
     z-index: 10;
   }
+}
 
-  html[data-festival='chunjie'] #header-desktop::before,
-  html[data-festival='yuanxiao'] #header-desktop::before {
-    content: '🏮🏮';
-    transform-origin: top center;
-    animation: festival-sway 3.6s ease-in-out infinite;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+/* ============================== 站点适配层 ==============================
+ * 针对站点对页首/页尾的深度定制（如 custom.scss 的奶油渐变页首、
+ * 水滴 SVG 装饰、cmpt-flyfish 的奶油色鱼群），命中节日时统一染色。
+ * 奶油紫基准色约为 hsl(240, 52%, 93%)，各节日通过 --festival-tint
+ * 提供色相旋转 + 饱和度提升滤镜。
+ */
+
+html[data-festival] #header-desktop {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--fi-header-background-color) 90%, #fff),
+    var(--fi-header-background-color)
+  );
+}
+
+html[data-festival] #header-desktop::after {
+  filter: var(--festival-tint, none);
+}
+
+html[data-festival] #flyfish canvas {
+  filter: var(--festival-tint, none);
+}
+
+/* ============================== 拉花彩旗（春节 / 除夕 / 元宵 / 国庆 / 元旦） ============================== */
+
+.fest-bunting {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  z-index: 9990;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='26'%3E%3Cpath d='M0 2 Q30 9 60 5 T120 5' stroke='%23c8a24b' stroke-width='1.5' fill='none'/%3E%3Cpath d='M6 7 L22 7 L14 25 Z' fill='%23e34343'/%3E%3Cpath d='M34 7 L50 7 L42 25 Z' fill='%23f5c342'/%3E%3Cpath d='M62 7 L78 7 L70 25 Z' fill='%23e34343'/%3E%3Cpath d='M90 7 L106 7 L98 25 Z' fill='%23f5c342'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+
+/* ============================== 冰凌挂檐（圣诞 / 冬至） ============================== */
+
+.fest-icicles {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -19px;
+  height: 19px;
+  z-index: 5;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='19'%3E%3Cpath d='M4 0 L18 0 L11 16 Z' fill='%23cfe8ff'/%3E%3Cpath d='M28 0 L40 0 L34 12 Z' fill='%23b7d9f5'/%3E%3Cpath d='M50 0 L66 0 L58 18 Z' fill='%23cfe8ff'/%3E%3Cpath d='M76 0 L86 0 L81 10 Z' fill='%23b7d9f5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+
+/* ============================== 中秋月夜（圆月 + 星空 + 流云） ============================== */
+
+.festival-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 9994;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fest-moon {
+  position: absolute;
+  top: 20px;
+  right: 10%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #fffbe8, #f7dd82 65%, #eec95c);
+  box-shadow:
+    0 0 32px 8px rgba(250, 224, 111, 0.4),
+    0 0 80px 24px rgba(250, 224, 111, 0.15);
+}
+
+.fest-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffe9a8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fest-star {
+    animation: fest-twinkle 3s infinite ease-in-out;
   }
 
-  html[data-festival='zhongqiu'] #header-desktop::before {
-    content: '🌕';
-    font-size: 1.8rem;
-    filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.5));
+  .fest-cloud {
+    position: absolute;
+    width: 220px;
+    height: 54px;
+    border-radius: 54px;
+    background: rgba(255, 255, 255, 0.07);
+    filter: blur(6px);
+    animation: fest-drift 60s infinite linear;
+  }
+
+  .fest-cloud--2 {
+    width: 160px;
+    height: 40px;
+    animation-duration: 85s;
+    animation-direction: reverse;
+  }
+}
+
+@keyframes fest-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes fest-drift {
+  from {
+    transform: translateX(-260px);
+  }
+  to {
+    transform: translateX(calc(100vw + 260px));
   }
 }
 
@@ -112,6 +443,7 @@ html[data-festival='chuxi'] {
   --fi-header-background-color: light-dark(#b93a26, #401b17);
   --fi-single-link-color: light-dark(#c0392b, #e0665a);
   --fi-global-border-color: light-dark(#eec9ae, #4a2b28);
+  --festival-tint: hue-rotate(115deg) saturate(7);
 }
 
 /* ============================== 元宵（暖红粉） ============================== */
@@ -120,6 +452,7 @@ html[data-festival='yuanxiao'] {
   --fi-global-background-color: light-dark(#fff3f0, #2b1a1d);
   --fi-header-background-color: light-dark(#d24b3e, #3d1f1a);
   --fi-single-link-color: light-dark(#d24b3e, #ef7a6d);
+  --festival-tint: hue-rotate(140deg) saturate(6);
 }
 
 /* ============================== 清明（低饱和，无特效） ============================== */
@@ -127,6 +460,7 @@ html[data-festival='yuanxiao'] {
 html[data-festival='qingming'] {
   --fi-global-background-color: light-dark(#f7f8f7, #1f2426);
   --fi-header-background-color: light-dark(#5f6f65, #2a332e);
+  --festival-tint: hue-rotate(-120deg) saturate(3);
 }
 
 /* ============================== 端午（青绿） ============================== */
@@ -136,6 +470,7 @@ html[data-festival='duanwu'] {
   --fi-header-background-color: light-dark(#2f7d4f, #1b3a28);
   --fi-single-link-color: light-dark(#2f7d4f, #6cbf8e);
   --fi-global-border-color: light-dark(#cbe6d4, #2c4034);
+  --festival-tint: hue-rotate(-90deg) saturate(6);
 }
 
 /* ============================== 七夕（粉紫） ============================== */
@@ -144,6 +479,7 @@ html[data-festival='qixi'] {
   --fi-global-background-color: light-dark(#fdf3f8, #2b1a2e);
   --fi-header-background-color: light-dark(#c2527f, #3d2244);
   --fi-single-link-color: light-dark(#c2527f, #e387ae);
+  --festival-tint: hue-rotate(80deg) saturate(6);
 }
 
 /* ============================== 中秋（深蓝金） ============================== */
@@ -153,6 +489,7 @@ html[data-festival='zhongqiu'] {
   --fi-header-background-color: light-dark(#274a73, #1a2a3f);
   --fi-single-link-color: light-dark(#274a73, #6fa3d8);
   --fi-global-border-color: light-dark(#c9d8ea, #2a3a50);
+  --festival-tint: hue-rotate(-20deg) saturate(5);
 }
 
 /* ============================== 国庆 / 元旦 / 劳动节（红橙点缀） ============================== */
@@ -162,6 +499,7 @@ html[data-festival='newyear'],
 html[data-festival='wuyi'] {
   --fi-header-background-color: light-dark(#d2543e, #3d211a);
   --fi-single-link-color: light-dark(#d2543e, #ef8a6d);
+  --festival-tint: hue-rotate(115deg) saturate(7);
 }
 
 /* ============================== 重阳 / 腊八（秋色淡染） ============================== */
@@ -170,6 +508,7 @@ html[data-festival='chongyang'],
 html[data-festival='laba'] {
   --fi-header-background-color: light-dark(#a86832, #3d2a1a);
   --fi-single-link-color: light-dark(#a86832, #d99c5e);
+  --festival-tint: hue-rotate(155deg) saturate(6);
 }
 
 /* ============================== 圣诞 / 冬至（冷蓝） ============================== */
@@ -180,4 +519,5 @@ html[data-festival='dongzhi'] {
   --fi-header-background-color: light-dark(#33637e, #1f3242);
   --fi-single-link-color: light-dark(#33637e, #7bb8d4);
   --fi-global-border-color: light-dark(#cfe0ea, #2c3e50);
+  --festival-tint: hue-rotate(-40deg) saturate(5);
 }

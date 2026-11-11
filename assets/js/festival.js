@@ -41,7 +41,7 @@ const DEFAULT_CONFIG = {
     { id: 'duanwu',    type: 'lunar', date: '5-5',   name: '端午节', level: 2, icon: '🥟' },
     { id: 'qixi',      type: 'lunar', date: '7-7',   name: '七夕',   level: 2, icon: '💌' },
     { id: 'zhongqiu',  type: 'lunar', date: '8-15',  name: '中秋节', level: 2, icon: '🌕', message: '花好月圆，千里共婵娟' },
-    { id: 'guoqing',   type: 'solar', date: '10-1',  name: '国庆节', level: 2, icon: '🎊', duration: 3 },
+    { id: 'guoqing',   type: 'solar', date: '10-1',  name: '国庆节', level: 3, icon: '🎊', duration: 3 },
     { id: 'chongyang', type: 'lunar', date: '9-9',   name: '重阳节', level: 1, icon: '🍂' },
     { id: 'laba',      type: 'lunar', date: '12-8',  name: '腊八节', level: 1, icon: '🥣' },
     { id: 'dongzhi',   type: 'term',  date: '冬至',   name: '冬至',   level: 3, icon: '❄️', message: '冬至大如年，愿君温暖过冬' },
@@ -52,6 +52,16 @@ const DEFAULT_CONFIG = {
   snowFestivals: ['shengdan', 'dongzhi'],
   /** 彩带特效节日（需 level >= 3） */
   confettiFestivals: ['chunjie', 'chuxi', 'newyear'],
+  /** 背景烟花节日（需 level >= 3） */
+  fireworkFestivals: ['chunjie', 'chuxi', 'newyear', 'guoqing'],
+  /** 渲染纯 CSS 灯笼的节日 */
+  lanternFestivals: ['chunjie', 'yuanxiao'],
+  /** 页首拉花彩旗 */
+  buntingFestivals: ['chunjie', 'chuxi', 'yuanxiao', 'guoqing', 'newyear'],
+  /** 页首冰凌挂檐 */
+  icicleFestivals: ['shengdan', 'dongzhi'],
+  /** 月夜装饰（圆月 + 星空 + 流云） */
+  moonFestivals: ['zhongqiu'],
 };
 
 const SNOW_DURATION = 20000;
@@ -141,6 +151,88 @@ function showBanner(f) {
   setTimeout(() => banner.remove(), BANNER_DURATION);
 }
 
+/**
+ * 纯 CSS 灯笼（顶部两侧悬挂，摇摆 + 流苏）
+ * 若站点旧版灯笼脚本（.lantern）已渲染则跳过，避免重复
+ */
+function showLanterns(f) {
+  if (document.querySelector('.lantern, .fest-lantern')) return;
+  const [leftText, rightText] = f.id === 'yuanxiao' ? ['元宵', '快乐'] : ['新年', '快乐'];
+  const lantern = (side, text) => `
+    <div class="fest-lantern fest-lantern--${side}"><div class="fest-lantern__container">
+      <div class="fest-lantern__top-rope"></div>
+      <div class="fest-lantern__top"></div>
+      <div class="fest-lantern__center">
+        <div class="fest-lantern__line">
+          <div class="fest-lantern__text-wrap"><div class="fest-lantern__text">${text}</div></div>
+        </div>
+      </div>
+      <div class="fest-lantern__bottom"></div>
+      <div class="fest-lantern__bottom-rope"></div>
+    </div></div>`;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = lantern('left', leftText) + lantern('right', rightText);
+  document.body.appendChild(wrap);
+}
+
+/**
+ * 页首主题装饰：按节日挂拉花 / 冰凌 / 月夜
+ */
+function showDecor(f) {
+  if (config.buntingFestivals.includes(f.id)) addBunting();
+  if (config.icicleFestivals.includes(f.id)) addIcicles();
+  if (config.moonFestivals.includes(f.id)) addMoonScene();
+}
+
+function addBunting() {
+  if (document.querySelector('.fest-bunting')) return;
+  const bunting = document.createElement('div');
+  bunting.className = 'fest-bunting';
+  document.body.appendChild(bunting);
+}
+
+function addIcicles() {
+  if (document.querySelector('.fest-icicles')) return;
+  const header = document.querySelector('#header-desktop');
+  if (!header) return;
+  const icicles = document.createElement('div');
+  icicles.className = 'fest-icicles';
+  header.appendChild(icicles);
+}
+
+function addMoonScene() {
+  if (document.querySelector('.festival-decor')) return;
+  const decor = document.createElement('div');
+  decor.className = 'festival-decor';
+
+  /* 星空：上半屏随机撒 40 颗星星，交错闪烁 */
+  for (let i = 0; i < 40; i++) {
+    const star = document.createElement('span');
+    star.className = 'fest-star';
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 35}%`;
+    star.style.animationDelay = `${Math.random() * 3}s`;
+    star.style.animationDuration = `${2.4 + Math.random() * 2}s`;
+    decor.appendChild(star);
+  }
+
+  /* 流云两朵 */
+  for (const [cls, top, delay] of [['fest-cloud', '90px', '0s'], ['fest-cloud fest-cloud--2', '150px', '-30s']]) {
+    const cloud = document.createElement('div');
+    cloud.className = cls;
+    cloud.style.top = `${top}px`;
+    cloud.style.animationDelay = delay;
+    decor.appendChild(cloud);
+  }
+
+  /* 圆月压轴 */
+  const moon = document.createElement('div');
+  moon.className = 'fest-moon';
+  decor.appendChild(moon);
+
+  document.body.appendChild(decor);
+}
+
 function launchConfetti(duration = 3000) {
   const colors = ['#ff4d4f', '#ffb84d', '#f8f8f8', '#ffd666', '#69c0ff'];
   const end = Date.now() + duration;
@@ -148,6 +240,102 @@ function launchConfetti(duration = 3000) {
     window.confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
     window.confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
     if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+
+/**
+ * 背景烟花：几发礼花在页面上方炸开后自动移除 canvas
+ */
+function startFireworks(duration = 4000) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'festival-fireworks';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas.remove();
+
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const palette = ['#ff4d4f', '#ffd666', '#69c0ff', '#fff1b8', '#ff85c0', '#95de64'];
+  const rockets = [];
+  const sparks = [];
+  const start = Date.now();
+  let lastLaunch = 0;
+  let launched = 0;
+
+  const launch = () => {
+    rockets.push({
+      x: window.innerWidth * (0.2 + Math.random() * 0.6),
+      y: window.innerHeight,
+      vx: (Math.random() - 0.5) * 1.4,
+      vy: -(9 + Math.random() * 3),
+      targetY: window.innerHeight * (0.2 + Math.random() * 0.2),
+      color: palette[Math.floor(Math.random() * palette.length)],
+    });
+  };
+
+  const explode = (r) => {
+    const n = 60 + Math.floor(Math.random() * 40);
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 * i) / n + Math.random() * 0.12;
+      const v = 2.4 + Math.random() * 3.6;
+      sparks.push({
+        x: r.x, y: r.y,
+        vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+        life: 55 + Math.random() * 35,
+        color: Math.random() < 0.85 ? r.color : '#fff',
+      });
+    }
+  };
+
+  (function frame() {
+    const elapsed = Date.now() - start;
+    if (elapsed > duration && !rockets.length && !sparks.length) {
+      canvas.remove();
+      window.removeEventListener('resize', resize);
+      return;
+    }
+    if (elapsed <= duration && Date.now() - lastLaunch > 650 && launched < 6) {
+      launch();
+      launched++;
+      lastLaunch = Date.now();
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.x += r.vx;
+      r.y += r.vy;
+      r.vy += 0.14;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff8e1';
+      ctx.fill();
+      if (r.y <= r.targetY || r.vy >= 0) {
+        explode(r);
+        rockets.splice(i, 1);
+      }
+    }
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.x += s.vx;
+      s.y += s.vy;
+      s.vy += 0.05;
+      s.vx *= 0.985;
+      s.vy *= 0.985;
+      s.life--;
+      ctx.globalAlpha = Math.max(0, Math.min(1, s.life / 55));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.fill();
+      if (s.life <= 0) sparks.splice(i, 1);
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
   })();
 }
 
@@ -165,17 +353,67 @@ function startSnow() {
   resize();
   window.addEventListener('resize', resize);
 
-  const newFlake = (initial) => ({
+  /* 亮色模式下白雪不可见，改用冰蓝灰；暗色模式用白 */
+  const dark = getComputedStyle(document.documentElement).colorScheme.includes('dark');
+  const rgb = dark ? '255, 255, 255' : '130, 160, 200';
+
+  /* 三层景深：远景细小飘忽，中景柔光，近景六臂雪花晶体（大而快、带风偏移） */
+  const LAYERS = [
+    { share: 0.35, rMin: 0.8, rMax: 1.5, sMin: 0.35, sMax: 0.75, alpha: 0.35, depth: 0.4, kind: 'dot' },
+    { share: 0.4, rMin: 1.9, rMax: 2.7, sMin: 0.9, sMax: 1.5, alpha: 0.5, depth: 0.7, kind: 'soft' },
+    { share: 0.25, rMin: 4.2, rMax: 6, sMin: 1.7, sMax: 2.8, alpha: 0.9, depth: 1.2, kind: 'crystal' },
+  ];
+
+  const newFlake = (layer, initial) => ({
+    layer,
     x: Math.random() * canvas.width,
-    y: initial ? Math.random() * canvas.height : -10,
-    r: 1.2 + Math.random() * 2.4,
-    speed: 0.6 + Math.random() * 1.4,
+    y: initial ? Math.random() * canvas.height : -10 - Math.random() * 40,
+    r: layer.rMin + Math.random() * (layer.rMax - layer.rMin),
+    speed: layer.sMin + Math.random() * (layer.sMax - layer.sMin),
     sway: Math.random() * Math.PI * 2,
     swaySpeed: 0.008 + Math.random() * 0.02,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.03,
   });
 
-  const flakes = Array.from({ length: Math.min(80, Math.ceil(window.innerWidth / 16)) }, () => newFlake(true));
+  const flakes = [];
+  for (const layer of LAYERS) {
+    const n = Math.round(Math.min(110, Math.ceil(window.innerWidth / 12)) * layer.share);
+    for (let i = 0; i < n; i++) flakes.push(newFlake(layer, true));
+  }
   const start = Date.now();
+
+  /* 风场：多个低频正弦叠加，缓慢转向并带阵风感 */
+  const wind = (t) =>
+    Math.sin(t / 4000) * 0.45 + Math.sin(t / 9000 + 1.3) * 0.3 + Math.sin(t / 23000 + 4) * 0.25;
+
+  const drawCrystal = (x, y, r, rot, alpha) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.strokeStyle = `rgba(${rgb}, ${alpha})`;
+    ctx.lineWidth = Math.max(1, r * 0.32);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      const dx = Math.cos(a) * r;
+      const dy = Math.sin(a) * r;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(dx, dy);
+      /* 主臂 55% 处伸出两根 60° 侧枝 */
+      const bx = dx * 0.55;
+      const by = dy * 0.55;
+      const bl = r * 0.38;
+      for (const s of [-1, 1]) {
+        const ba = a + s * Math.PI / 3;
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + Math.cos(ba) * bl, by + Math.sin(ba) * bl);
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  };
 
   (function frame() {
     if (Date.now() - start > SNOW_DURATION) {
@@ -183,16 +421,35 @@ function startSnow() {
       window.removeEventListener('resize', resize);
       return;
     }
+    const t = Date.now();
+    const w = wind(t);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     for (const fl of flakes) {
       fl.sway += fl.swaySpeed;
-      fl.x += Math.sin(fl.sway);
+      fl.rot += fl.rotSpeed;
+      fl.x += w * fl.layer.depth + Math.sin(fl.sway) * 0.5;
       fl.y += fl.speed;
-      if (fl.y > canvas.height + 10) Object.assign(fl, newFlake(false));
-      ctx.beginPath();
-      ctx.arc(fl.x, fl.y, fl.r, 0, Math.PI * 2);
-      ctx.fill();
+      /* 左右环绕穿出后从另一侧回来 */
+      if (fl.x < -20) fl.x = canvas.width + 20;
+      if (fl.x > canvas.width + 20) fl.x = -20;
+      if (fl.y > canvas.height + 10) Object.assign(fl, newFlake(fl.layer, false));
+
+      if (fl.layer.kind === 'dot') {
+        ctx.fillStyle = `rgba(${rgb}, ${fl.layer.alpha})`;
+        ctx.beginPath();
+        ctx.arc(fl.x, fl.y, fl.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (fl.layer.kind === 'soft') {
+        const g = ctx.createRadialGradient(fl.x, fl.y, 0, fl.x, fl.y, fl.r * 1.8);
+        g.addColorStop(0, `rgba(${rgb}, ${fl.layer.alpha})`);
+        g.addColorStop(1, `rgba(${rgb}, 0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(fl.x, fl.y, fl.r * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        drawCrystal(fl.x, fl.y, fl.r, fl.rot, fl.layer.alpha);
+      }
     }
     requestAnimationFrame(frame);
   })();
@@ -213,10 +470,13 @@ function apply(f) {
   );
 
   if (config.banner && f.level >= 2) showBanner(f);
+  if (config.lanternFestivals.includes(f.id)) showLanterns(f);
+  showDecor(f);
 
   if (!config.effects || f.level < 3) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (config.confettiFestivals.includes(f.id)) launchConfetti();
+  if (config.fireworkFestivals.includes(f.id)) startFireworks();
   if (config.snowFestivals.includes(f.id)) startSnow();
 }
 
@@ -224,8 +484,15 @@ function apply(f) {
 
 const config = { ...DEFAULT_CONFIG, ...(window.FixItFestivalConfig || {}) };
 
+/* 'YYYY-MM-DD' → 本地日期（正午，避免时区偏移到前一天） */
+const parseLocalDate = (s) => {
+  const [y, m, d] = String(s).split('-').map(Number);
+  return new Date(y, m - 1, d, 12);
+};
+
 (function init() {
-  const now = new Date();
+  const now = config.previewDate ? parseLocalDate(config.previewDate) : new Date();
+  if (config.previewDate) console.info('[festival] 预览日期覆盖:', config.previewDate);
 
   if (isMuted(now, config.mutedDates)) {
     console.info('[festival] 哀悼日，已停用节日效果');
